@@ -3,9 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 
+interface RankedUser extends User {
+  rank: number;
+}
+
 @Injectable()
 export class RankingService {
-  private rankingsCache: User[] | null = null;
+  private rankingsCache: RankedUser[] | null = null;
   private lastUpdateTime: number = 0;
   private readonly CACHE_DURATION = 30000; // 30초
 
@@ -14,7 +18,7 @@ export class RankingService {
     private userRepository: Repository<User>,
   ) {}
 
-  async getRankings(): Promise<User[]> {
+  async getRankings(): Promise<RankedUser[]> {
     const now = Date.now();
     
     // 캐시가 있고 30초가 지나지 않았다면 캐시된 데이터 반환
@@ -23,31 +27,51 @@ export class RankingService {
     }
 
     // 캐시가 없거나 만료되었다면 새로운 데이터 조회
-    const rankings = await this.userRepository.find({
+    const users = await this.userRepository.find({
       order: {
         coinCount: 'DESC'
       },
       select: ['id', 'username', 'coinCount', 'isAdmin']
     });
 
+    // 공동 순위 계산
+    let currentRank = 1;
+    let currentCoins = users[0]?.coinCount;
+    let skipCount = 0;
+
+    const rankedUsers = users.map((user, index) => {
+      if (user.coinCount !== currentCoins) {
+        currentRank = index + 1;
+        currentCoins = user.coinCount;
+        skipCount = 0;
+      } else {
+        skipCount++;
+      }
+
+      return {
+        ...user,
+        rank: currentRank
+      } as RankedUser;
+    });
+
     // 캐시 업데이트
-    this.rankingsCache = rankings;
+    this.rankingsCache = rankedUsers;
     this.lastUpdateTime = now;
 
-    return rankings;
+    return rankedUsers;
   }
 
   async getUserRanking(userId: number): Promise<{ rank: number; user: User }> {
     const users = await this.getRankings();
-    const userIndex = users.findIndex(user => user.id === userId);
+    const user = users.find(user => user.id === userId);
     
-    if (userIndex === -1) {
+    if (!user) {
       throw new Error('사용자를 찾을 수 없습니다.');
     }
 
     return {
-      rank: userIndex + 1,
-      user: users[userIndex]
+      rank: user.rank,
+      user
     };
   }
 

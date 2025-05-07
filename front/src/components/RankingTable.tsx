@@ -7,6 +7,7 @@ interface User {
   username: string;
   coinCount: number;
   isAdmin: boolean;
+  rank: number;
 }
 
 const RankingTable: React.FC = () => {
@@ -18,6 +19,7 @@ const RankingTable: React.FC = () => {
     const fetchRankings = async () => {
       try {
         const response = await axios.get<User[]>('http://localhost:4000/ranking');
+        console.log('랭킹 데이터:', response.data); // 데이터 확인용 로그
         setUsers(response.data);
         setLoading(false);
       } catch (err) {
@@ -49,9 +51,9 @@ const RankingTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map((user, index) => (
+          {users.map((user) => (
             <tr key={user.id} className={user.isAdmin ? 'admin-row' : ''}>
-              <td>{index + 1}</td>
+              <td>{user.rank}</td>
               <td>
                 {user.username}
                 {user.isAdmin && <span className="admin-badge">관리자</span>}
