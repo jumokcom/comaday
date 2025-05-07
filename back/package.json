@@ -34,7 +34,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "redis": "^4.7.0",
-    "typeorm": "^0.3.22"
+    "typeorm": "^0.3.23"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.7",
