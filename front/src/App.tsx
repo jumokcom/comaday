@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from "react";
 import "./App.css";
 import { userService } from "./api/services/userService";
 import { User } from "./types/user";
+import RankingTable from './components/RankingTable';
 
 // App.tsx 파일의 AppContent 컴포넌트 내부
 <>
@@ -197,35 +198,6 @@ const UserInfo = () => {
         {currentUser.username} <span className="separator">|</span> 코인:{" "}
         {currentUser.coinCount}
       </div>
-    </div>
-  );
-};
-
-const RankingTable = () => {
-  const { users } = useUser();
-  const sortedUsers = [...users].sort((a, b) => b.coinCount - a.coinCount);
-
-  return (
-    <div className="ranking-container">
-      <h2 className="ranking-title">랭킹</h2>
-      <table className="ranking-table">
-        <thead>
-          <tr>
-            <th>순위</th>
-            <th>이름</th>
-            <th>코인</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedUsers.map((user, index) => (
-            <tr key={user.id}>
-              <td>{index + 1}</td>
-              <td>{user.username}</td>
-              <td>{user.coinCount}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 };
