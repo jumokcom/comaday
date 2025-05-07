@@ -47,4 +47,23 @@
   background-color: #f8d7da;
   border-radius: 4px;
   margin: 20px 0;
+}
+
+.admin-row {
+  background-color: #f8f9fa;
+}
+
+.admin-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.8em;
+}
+
+.coin-count {
+  font-weight: 600;
+  color: #28a745;
 } 

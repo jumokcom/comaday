@@ -11,16 +11,9 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  private generateMemberNumber(): string {
-    const timestamp = Date.now().toString();
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `M${timestamp}${random}`;
-  }
-
   async create(username: string): Promise<User> {
     const user = this.usersRepository.create({ 
       username,
-      memberNumber: this.generateMemberNumber(),
       coinCount: 0,
       isGuest: true
     });
@@ -32,7 +25,6 @@ export class UsersService {
     const user = this.usersRepository.create({ 
       username, 
       password: hashedPassword,
-      memberNumber: this.generateMemberNumber(),
       coinCount: 0,
       isGuest: true,
       lastLoginAt: new Date()
@@ -50,10 +42,6 @@ export class UsersService {
 
   async findByUsername(username: string): Promise<User> {
     return this.usersRepository.findOne({ where: { username } });
-  }
-
-  async findByEmail(email: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { email } });
   }
 
   async updateCoins(id: number, amount: number): Promise<User> {

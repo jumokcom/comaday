@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Param, UseGuards, Request } from '@nestjs/common';
 import { CoinsService } from './coins.service';
-import { CoinTransaction } from './entities/coin-transaction.entity';
+import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('coins')
@@ -12,27 +12,21 @@ export class CoinsController {
     @Body('senderId') senderId: number,
     @Body('receiverId') receiverId: number,
     @Body('amount') amount: number,
-  ): Promise<CoinTransaction> {
+  ): Promise<User> {
     return this.coinsService.transfer(senderId, receiverId, amount);
   }
 
-  @Get('history/:userId')
-  async getTransactions(@Param('userId') userId: string): Promise<CoinTransaction[]> {
-    return this.coinsService.getTransactions(+userId);
+  @Get('user/:userId')
+  async getUserInfo(@Param('userId') userId: string): Promise<User> {
+    return this.coinsService.getUserInfo(+userId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('transactions')
-  async getAllTransactions(): Promise<CoinTransaction[]> {
-    return this.coinsService.getAllTransactions();
-  }
-
   @Post('earn')
   async earnCoins(
     @Request() req,
     @Body('amount') amount: number,
-    @Body('description') description: string,
-  ): Promise<CoinTransaction> {
-    return this.coinsService.earnCoins(req.user.id, amount, description);
+  ): Promise<User> {
+    return this.coinsService.earnCoins(req.user.id, amount);
   }
 } 

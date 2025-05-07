@@ -5,18 +5,36 @@ import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class RankingService {
+  private rankingsCache: User[] | null = null;
+  private lastUpdateTime: number = 0;
+  private readonly CACHE_DURATION = 30000; // 30초
+
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
 
   async getRankings(): Promise<User[]> {
-    return this.userRepository.find({
+    const now = Date.now();
+    
+    // 캐시가 있고 30초가 지나지 않았다면 캐시된 데이터 반환
+    if (this.rankingsCache && (now - this.lastUpdateTime) < this.CACHE_DURATION) {
+      return this.rankingsCache;
+    }
+
+    // 캐시가 없거나 만료되었다면 새로운 데이터 조회
+    const rankings = await this.userRepository.find({
       order: {
         coinCount: 'DESC'
       },
-      select: ['id', 'username', 'coinCount', 'memberNumber']
+      select: ['id', 'username', 'coinCount', 'isAdmin']
     });
+
+    // 캐시 업데이트
+    this.rankingsCache = rankings;
+    this.lastUpdateTime = now;
+
+    return rankings;
   }
 
   async getUserRanking(userId: number): Promise<{ rank: number; user: User }> {
@@ -31,5 +49,11 @@ export class RankingService {
       rank: userIndex + 1,
       user: users[userIndex]
     };
+  }
+
+  // 캐시 무효화 메서드
+  invalidateCache(): void {
+    this.rankingsCache = null;
+    this.lastUpdateTime = 0;
   }
 } 

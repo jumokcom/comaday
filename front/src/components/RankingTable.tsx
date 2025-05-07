@@ -6,7 +6,7 @@ interface User {
   id: number;
   username: string;
   coinCount: number;
-  memberNumber: string;
+  isAdmin: boolean;
 }
 
 const RankingTable: React.FC = () => {
@@ -17,7 +17,7 @@ const RankingTable: React.FC = () => {
   useEffect(() => {
     const fetchRankings = async () => {
       try {
-        const response = await axios.get<User[]>('http://localhost:3001/ranking');
+        const response = await axios.get<User[]>('http://localhost:4000/ranking');
         setUsers(response.data);
         setLoading(false);
       } catch (err) {
@@ -44,17 +44,20 @@ const RankingTable: React.FC = () => {
           <tr>
             <th>순위</th>
             <th>이름</th>
-            <th>회원번호</th>
+            <th>ID</th>
             <th>보유 코인</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user, index) => (
-            <tr key={user.id}>
+            <tr key={user.id} className={user.isAdmin ? 'admin-row' : ''}>
               <td>{index + 1}</td>
-              <td>{user.username}</td>
-              <td>{user.memberNumber}</td>
-              <td>{user.coinCount.toLocaleString()}</td>
+              <td>
+                {user.username}
+                {user.isAdmin && <span className="admin-badge">관리자</span>}
+              </td>
+              <td>{user.id}</td>
+              <td className="coin-count">{user.coinCount.toLocaleString()}</td>
             </tr>
           ))}
         </tbody>
