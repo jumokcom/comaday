@@ -28,21 +28,13 @@ __decorate([
 ], Ranking.prototype, "username", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
-], Ranking.prototype, "memberNumber", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
     __metadata("design:type", Number)
-], Ranking.prototype, "totalCoins", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", Number)
-], Ranking.prototype, "rank", void 0);
+], Ranking.prototype, "score", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], Ranking.prototype, "createdAt", void 0);
 exports.Ranking = Ranking = __decorate([
-    (0, typeorm_1.Entity)()
+    (0, typeorm_1.Entity)('rankings')
 ], Ranking);
 //# sourceMappingURL=ranking.entity.js.map

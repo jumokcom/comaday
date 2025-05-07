@@ -13,21 +13,20 @@ export class RankingService {
     private rankingRepository: Repository<Ranking>,
   ) {}
 
-  async getRankings(): Promise<Ranking[]> {
-    const users = await this.userRepository.find();
-    const sortedUsers = users.sort((a, b) => b.coinCount - a.coinCount);
-
-    const rankings = sortedUsers.map((user, index) => {
-      return this.rankingRepository.create({
-        userId: user.id,
-        username: user.username,
-        memberNumber: user.memberNumber,
-        totalCoins: user.coinCount,
-        rank: index + 1,
-      });
+  async createRanking(user: User, score: number): Promise<Ranking> {
+    const ranking = this.rankingRepository.create({
+      userId: user.id,
+      username: user.username,
+      score: score,
     });
+    return this.rankingRepository.save(ranking);
+  }
 
-    return this.rankingRepository.save(rankings);
+  async getRankings(): Promise<Ranking[]> {
+    return this.rankingRepository.find({
+      order: { score: 'DESC' },
+      take: 10,
+    });
   }
 
   async getUserRanking(userId: number): Promise<Ranking> {

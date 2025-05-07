@@ -36,6 +36,6 @@ __decorate([
     __metadata("design:type", Date)
 ], Ranking.prototype, "createdAt", void 0);
 exports.Ranking = Ranking = __decorate([
-    (0, typeorm_1.Entity)('rankings')
+    (0, typeorm_1.Entity)('ranking')
 ], Ranking);
 //# sourceMappingURL=ranking.entity.js.map

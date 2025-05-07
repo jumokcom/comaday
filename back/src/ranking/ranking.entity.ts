@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 
-@Entity('rankings')
+@Entity('ranking')
 export class Ranking {
   @PrimaryGeneratedColumn()
   id: number;

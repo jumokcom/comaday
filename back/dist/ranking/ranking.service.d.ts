@@ -5,6 +5,7 @@ export declare class RankingService {
     private userRepository;
     private rankingRepository;
     constructor(userRepository: Repository<User>, rankingRepository: Repository<Ranking>);
+    createRanking(user: User, score: number): Promise<Ranking>;
     getRankings(): Promise<Ranking[]>;
     getUserRanking(userId: number): Promise<Ranking>;
 }

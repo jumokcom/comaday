@@ -1,0 +1,92 @@
+.admin-page {
+  padding: var(--spacing-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-page h2 {
+  margin-bottom: var(--spacing-xl);
+  color: var(--color-text);
+}
+
+.admin-page h3 {
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text);
+}
+
+.new-users-section,
+.send-coins-section {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.new-users-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.user-card {
+  background: var(--color-background-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+}
+
+.user-info {
+  margin-bottom: var(--spacing-md);
+}
+
+.user-info p {
+  margin: var(--spacing-xs) 0;
+  color: var(--color-text);
+}
+
+.user-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.user-actions button {
+  flex: 1;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-background);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.user-actions button:hover {
+  background: var(--color-background-hover);
+}
+
+.send-coins-form {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.send-coins-form select,
+.send-coins-form input {
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-background);
+}
+
+.send-coins-form button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-background);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.send-coins-form button:hover {
+  background: var(--color-background-hover);
+} 

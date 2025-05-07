@@ -23,19 +23,19 @@ let RankingService = class RankingService {
         this.userRepository = userRepository;
         this.rankingRepository = rankingRepository;
     }
-    async getRankings() {
-        const users = await this.userRepository.find();
-        const sortedUsers = users.sort((a, b) => b.coinCount - a.coinCount);
-        const rankings = sortedUsers.map((user, index) => {
-            return this.rankingRepository.create({
-                userId: user.id,
-                username: user.username,
-                memberNumber: user.memberNumber,
-                totalCoins: user.coinCount,
-                rank: index + 1,
-            });
+    async createRanking(user, score) {
+        const ranking = this.rankingRepository.create({
+            userId: user.id,
+            username: user.username,
+            score: score,
         });
-        return this.rankingRepository.save(rankings);
+        return this.rankingRepository.save(ranking);
+    }
+    async getRankings() {
+        return this.rankingRepository.find({
+            order: { score: 'DESC' },
+            take: 10,
+        });
     }
     async getUserRanking(userId) {
         const rankings = await this.getRankings();

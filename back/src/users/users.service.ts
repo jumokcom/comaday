@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -6,81 +6,78 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private userRepository: Repository<User>,
   ) {}
 
-  private generateMemberNumber(): string {
-    const timestamp = Date.now().toString();
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `M${timestamp}${random}`;
-  }
+  async create(username: string, password: string, email?: string): Promise<User> {
+    const existingUser = await this.findOne(username);
+    if (existingUser) {
+      throw new ConflictException('이미 존재하는 사용자명입니다.');
+    }
 
-  async create(username: string): Promise<User> {
-    const user = this.usersRepository.create({ 
-      username,
-      memberNumber: this.generateMemberNumber(),
-      coinCount: 0,
-      isGuest: true
-    });
-    return this.usersRepository.save(user);
-  }
-
-  async createWithPassword(username: string, password: string): Promise<User> {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = this.usersRepository.create({ 
-      username, 
+    const user = this.userRepository.create({
+      username,
       password: hashedPassword,
-      memberNumber: this.generateMemberNumber(),
-      coinCount: 0,
-      isGuest: true,
-      lastLoginAt: new Date()
+      email,
+      isGuest: false,
     });
-    return this.usersRepository.save(user);
+
+    return this.userRepository.save(user);
   }
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+  async createGuest(): Promise<User> {
+    const user = this.userRepository.create({
+      username: `guest_${Date.now()}`,
+      password: await bcrypt.hash(Math.random().toString(), 10),
+      isGuest: true,
+    });
+
+    return this.userRepository.save(user);
   }
 
-  async findOne(id: number): Promise<User> {
-    return this.usersRepository.findOne({ where: { id } });
-  }
-
-  async findByUsername(username: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { username } });
-  }
-
-  async findByEmail(email: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { email } });
-  }
-
-  async updateCoins(id: number, amount: number): Promise<User> {
-    const user = await this.findOne(id);
-    if (!user) {
-      throw new Error('사용자를 찾을 수 없습니다.');
-    }
-    user.coinCount += amount;
-    return this.usersRepository.save(user);
-  }
-
-  async guestLogin(username: string, password: string): Promise<User> {
-    const user = await this.findByUsername(username);
+  async findOne(username: string): Promise<User | undefined> {
+    this.logger.debug(`Finding user by username: ${username}`);
     
+    try {
+      // 모든 사용자를 가져와서 로깅
+      const allUsers = await this.userRepository.find();
+      this.logger.debug('All users in database:');
+      allUsers.forEach(user => {
+        this.logger.debug(`Username: ${user.username}, isAdmin: ${user.isAdmin}`);
+      });
+
+      // 정확한 매칭을 위해 쿼리 수정
+      const user = await this.userRepository.findOne({
+        where: { username },
+        select: ['id', 'username', 'password', 'email', 'isAdmin', 'isGuest', 'coinCount', 'createdAt', 'updatedAt', 'lastLoginAt']
+      });
+
+      this.logger.debug(`User found: ${user ? 'yes' : 'no'}, isAdmin: ${user?.isAdmin}`);
+      if (user) {
+        this.logger.debug(`Found user details - id: ${user.id}, username: ${user.username}, isAdmin: ${user.isAdmin}`);
+      }
+      
+      return user;
+    } catch (error) {
+      this.logger.error(`Error finding user: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async findById(id: number): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
-      // 새로운 비회원 계정 생성
-      return this.createWithPassword(username, password);
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
+    return user;
+  }
 
-    // 비밀번호 확인
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('아이디 또는 비밀번호가 일치하지 않습니다.');
-    }
-
-    // 마지막 로그인 시간 업데이트
-    user.lastLoginAt = new Date();
-    return this.usersRepository.save(user);
+  async updateLastLogin(id: number): Promise<void> {
+    await this.userRepository.update(id, { lastLoginAt: new Date() });
   }
 } 

@@ -1,13 +1,12 @@
 export declare class User {
     id: number;
     username: string;
-    email: string;
     password: string;
-    memberNumber: string;
-    coinCount: number;
+    email: string;
     isAdmin: boolean;
     isGuest: boolean;
-    lastLoginAt: Date;
+    coinCount: number;
     createdAt: Date;
     updatedAt: Date;
+    lastLoginAt: Date;
 }

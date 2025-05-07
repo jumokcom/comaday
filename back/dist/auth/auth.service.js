@@ -19,41 +19,43 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
+var AuthService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
-const jwt_1 = require("@nestjs/jwt");
 const users_service_1 = require("../users/users.service");
 const bcrypt = require("bcrypt");
-let AuthService = class AuthService {
-    constructor(usersService, jwtService) {
+let AuthService = AuthService_1 = class AuthService {
+    constructor(usersService) {
         this.usersService = usersService;
-        this.jwtService = jwtService;
+        this.logger = new common_1.Logger(AuthService_1.name);
     }
     async validateUser(username, password) {
-        const user = await this.usersService.findByUsername(username);
-        if (user && await bcrypt.compare(password, user.password)) {
-            const { password } = user, result = __rest(user, ["password"]);
-            return result;
-        }
-        return null;
-    }
-    async login(username, password) {
-        const user = await this.validateUser(username, password);
+        this.logger.debug(`Attempting to validate user: ${username}`);
+        const user = await this.usersService.findOne(username);
+        this.logger.debug(`User found: ${user ? 'yes' : 'no'}`);
         if (!user) {
-            throw new common_1.UnauthorizedException('아이디 또는 비밀번호가 올바르지 않습니다.');
+            this.logger.debug(`User not found: ${username}`);
+            throw new common_1.UnauthorizedException('사용자를 찾을 수 없습니다.');
         }
-        const payload = { username: user.username, sub: user.id };
-        return {
-            access_token: this.jwtService.sign(payload),
-            user,
-        };
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        this.logger.debug(`Password validation result: ${isPasswordValid}`);
+        if (!isPasswordValid) {
+            this.logger.debug(`Invalid password for user: ${username}`);
+            throw new common_1.UnauthorizedException('비밀번호가 일치하지 않습니다.');
+        }
+        if (user.isGuest) {
+            this.logger.debug(`Guest user attempted login: ${username}`);
+            throw new common_1.UnauthorizedException('게스트 계정으로는 로그인할 수 없습니다.');
+        }
+        const { password: _ } = user, result = __rest(user, ["password"]);
+        this.logger.debug(`User validated successfully: ${username}, isAdmin: ${result.isAdmin}`);
+        return result;
     }
 };
 exports.AuthService = AuthService;
-exports.AuthService = AuthService = __decorate([
+exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [users_service_1.UsersService,
-        jwt_1.JwtService])
+    __metadata("design:paramtypes", [users_service_1.UsersService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

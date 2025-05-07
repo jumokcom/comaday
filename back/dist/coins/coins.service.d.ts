@@ -9,4 +9,10 @@ export declare class CoinsService {
     getTransactions(userId: number): Promise<CoinTransaction[]>;
     getAllTransactions(): Promise<CoinTransaction[]>;
     earnCoins(userId: number, amount: number, description: string): Promise<CoinTransaction>;
+    getCoins(userId: number): Promise<{
+        coins: number;
+    }>;
+    collectCoins(userId: number): Promise<{
+        coins: number;
+    }>;
 }

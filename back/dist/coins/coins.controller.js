@@ -15,10 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CoinsController = void 0;
 const common_1 = require("@nestjs/common");
 const coins_service_1 = require("./coins.service");
-const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let CoinsController = class CoinsController {
     constructor(coinsService) {
         this.coinsService = coinsService;
+    }
+    checkSession(session) {
+        if (!session.user) {
+            throw new common_1.UnauthorizedException('로그인이 필요합니다.');
+        }
+        return session.user;
     }
     async transfer(senderId, receiverId, amount) {
         return this.coinsService.transfer(senderId, receiverId, amount);
@@ -26,8 +31,13 @@ let CoinsController = class CoinsController {
     async getTransactions(userId) {
         return this.coinsService.getTransactions(+userId);
     }
-    async getAllTransactions() {
-        return this.coinsService.getAllTransactions();
+    async getCoins(session) {
+        const user = this.checkSession(session);
+        return this.coinsService.getCoins(user.id);
+    }
+    async collectCoins(session) {
+        const user = this.checkSession(session);
+        return this.coinsService.collectCoins(user.id);
     }
     async earnCoins(req, amount, description) {
         return this.coinsService.earnCoins(req.user.id, amount, description);
@@ -51,12 +61,19 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CoinsController.prototype, "getTransactions", null);
 __decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Get)('transactions'),
+    (0, common_1.Get)(),
+    __param(0, (0, common_1.Session)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], CoinsController.prototype, "getAllTransactions", null);
+], CoinsController.prototype, "getCoins", null);
+__decorate([
+    (0, common_1.Post)('collect'),
+    __param(0, (0, common_1.Session)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], CoinsController.prototype, "collectCoins", null);
 __decorate([
     (0, common_1.Post)('earn'),
     __param(0, (0, common_1.Request)()),

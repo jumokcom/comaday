@@ -2,6 +2,8 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import './App.css';
 import { userService } from './api/services/userService';
 import { User } from './types/user';
+import { AdminPage } from './components/AdminPage';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 /**
  * @fileoverview 코마데이(ComaDay) - 실시간 코인 전송 및 랭킹 관리 시스템
@@ -114,17 +116,6 @@ interface Result<T> {
   data?: T;
   message?: string;
 }
-
-/**
- * @const MOCK_USERS
- * @description 목업 사용자 데이터 (백엔드 API 구현 시 제거 예정)
- * @note GET /api/users 엔드포인트의 응답 형식과 동일
- */
-const MOCK_USERS: User[] = [
-  { id: 1, username: "고재우, 나산하", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
-  { id: 2, username: "김연지, 김채민", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
-  { id: 3, username: "박지성, 이민재", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
-];
 
 // Contexts
 const MessageContext = createContext<MessageContextType | null>(null);
@@ -471,11 +462,21 @@ const AppContent = () => {
 
 // Root App Component
 const App = () => (
-  <MessageProvider>
-    <UserProvider>
-      <AppContent />
-    </UserProvider>
-  </MessageProvider>
+  <BrowserRouter>
+    <MessageProvider>
+      <UserProvider>
+        <div className="app">
+          <MessageBox />
+          <div className="content">
+            <Routes>
+              <Route path="/" element={<AppContent />} />
+              <Route path="/admin" element={<AdminPage />} />
+            </Routes>
+          </div>
+        </div>
+      </UserProvider>
+    </MessageProvider>
+  </BrowserRouter>
 );
 
 export default App;

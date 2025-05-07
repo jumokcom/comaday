@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 
-@Entity()
+@Entity('rankings')
 export class Ranking {
   @PrimaryGeneratedColumn()
   id: number;
@@ -12,13 +12,7 @@ export class Ranking {
   username: string;
 
   @Column()
-  memberNumber: string;
-
-  @Column()
-  totalCoins: number;
-
-  @Column()
-  rank: number;
+  score: number;
 
   @CreateDateColumn()
   createdAt: Date;

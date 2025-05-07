@@ -7,8 +7,10 @@ import { UsersModule } from './users/users.module';
 import { CoinsModule } from './coins/coins.module';
 import { RankingModule } from './ranking/ranking.module';
 import { AuthModule } from './auth/auth.module';
+import { AdminModule } from './admin/admin.module';
 import configuration from './config/configuration';
 import { getTypeOrmConfig } from './config/typeorm.config';
+import * as session from 'express-session';
 
 @Module({
   imports: [
@@ -36,6 +38,23 @@ import { getTypeOrmConfig } from './config/typeorm.config';
     UsersModule,
     CoinsModule,
     RankingModule,
+    AdminModule,
   ],
 })
-export class AppModule {} 
+export class AppModule {
+  configure(consumer) {
+    consumer
+      .apply(
+        session({
+          secret: process.env.SESSION_SECRET || 'your-secret-key',
+          resave: false,
+          saveUninitialized: false,
+          cookie: {
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
+          },
+        }),
+      )
+      .forRoutes('*');
+  }
+} 

@@ -359,4 +359,48 @@ select:focus,
 button:focus {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 200px;
+}
+
+.password-input-container input {
+  width: 100%;
+  padding: var(--spacing-xs);
+  padding-right: 35px;
+  border: 1px solid var(--color-border);
+  height: 24px;
+  box-sizing: border-box;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  z-index: 1;
+}
+
+.password-toggle-btn:hover {
+  color: var(--color-text);
+}
+
+.password-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 } 

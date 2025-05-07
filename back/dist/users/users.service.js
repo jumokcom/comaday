@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var UsersService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
@@ -18,71 +19,69 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("./entities/user.entity");
 const bcrypt = require("bcrypt");
-let UsersService = class UsersService {
-    constructor(usersRepository) {
-        this.usersRepository = usersRepository;
+let UsersService = UsersService_1 = class UsersService {
+    constructor(userRepository) {
+        this.userRepository = userRepository;
+        this.logger = new common_1.Logger(UsersService_1.name);
     }
-    generateMemberNumber() {
-        const timestamp = Date.now().toString();
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-        return `M${timestamp}${random}`;
-    }
-    async create(username) {
-        const user = this.usersRepository.create({
-            username,
-            memberNumber: this.generateMemberNumber(),
-            coinCount: 0,
-            isGuest: true
-        });
-        return this.usersRepository.save(user);
-    }
-    async createWithPassword(username, password) {
+    async create(username, password, email) {
+        const existingUser = await this.findOne(username);
+        if (existingUser) {
+            throw new common_1.ConflictException('이미 존재하는 사용자명입니다.');
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = this.usersRepository.create({
+        const user = this.userRepository.create({
             username,
             password: hashedPassword,
-            memberNumber: this.generateMemberNumber(),
-            coinCount: 0,
-            isGuest: true,
-            lastLoginAt: new Date()
+            email,
+            isGuest: false,
         });
-        return this.usersRepository.save(user);
+        return this.userRepository.save(user);
     }
-    async findAll() {
-        return this.usersRepository.find();
+    async createGuest() {
+        const user = this.userRepository.create({
+            username: `guest_${Date.now()}`,
+            password: await bcrypt.hash(Math.random().toString(), 10),
+            isGuest: true,
+        });
+        return this.userRepository.save(user);
     }
-    async findOne(id) {
-        return this.usersRepository.findOne({ where: { id } });
+    async findOne(username) {
+        this.logger.debug(`Finding user by username: ${username}`);
+        try {
+            const allUsers = await this.userRepository.find();
+            this.logger.debug('All users in database:');
+            allUsers.forEach(user => {
+                this.logger.debug(`Username: ${user.username}, isAdmin: ${user.isAdmin}`);
+            });
+            const user = await this.userRepository.findOne({
+                where: { username },
+                select: ['id', 'username', 'password', 'email', 'isAdmin', 'isGuest', 'coinCount', 'createdAt', 'updatedAt', 'lastLoginAt']
+            });
+            this.logger.debug(`User found: ${user ? 'yes' : 'no'}, isAdmin: ${user === null || user === void 0 ? void 0 : user.isAdmin}`);
+            if (user) {
+                this.logger.debug(`Found user details - id: ${user.id}, username: ${user.username}, isAdmin: ${user.isAdmin}`);
+            }
+            return user;
+        }
+        catch (error) {
+            this.logger.error(`Error finding user: ${error.message}`);
+            throw error;
+        }
     }
-    async findByUsername(username) {
-        return this.usersRepository.findOne({ where: { username } });
-    }
-    async findByEmail(email) {
-        return this.usersRepository.findOne({ where: { email } });
-    }
-    async updateCoins(id, amount) {
-        const user = await this.findOne(id);
+    async findById(id) {
+        const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
-            throw new Error('사용자를 찾을 수 없습니다.');
+            throw new common_1.NotFoundException('사용자를 찾을 수 없습니다.');
         }
-        user.coinCount += amount;
-        return this.usersRepository.save(user);
+        return user;
     }
-    async guestLogin(username, password) {
-        const user = await this.findByUsername(username);
-        if (!user) {
-            return this.createWithPassword(username, password);
-        }
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            throw new common_1.UnauthorizedException('아이디 또는 비밀번호가 일치하지 않습니다.');
-        }
-        user.lastLoginAt = new Date();
-        return this.usersRepository.save(user);
+    async updateLastLogin(id) {
+        await this.userRepository.update(id, { lastLoginAt: new Date() });
     }
 };
 exports.UsersService = UsersService;
-exports.UsersService = UsersService = __decorate([
+exports.UsersService = UsersService = UsersService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository])

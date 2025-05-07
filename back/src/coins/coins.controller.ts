@@ -1,11 +1,17 @@
-import { Controller, Post, Body, Get, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, UseGuards, Request, Session, UnauthorizedException } from '@nestjs/common';
 import { CoinsService } from './coins.service';
 import { CoinTransaction } from './entities/coin-transaction.entity';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('coins')
 export class CoinsController {
   constructor(private readonly coinsService: CoinsService) {}
+
+  private checkSession(session: any) {
+    if (!session.user) {
+      throw new UnauthorizedException('로그인이 필요합니다.');
+    }
+    return session.user;
+  }
 
   @Post('transfer')
   async transfer(
@@ -21,10 +27,16 @@ export class CoinsController {
     return this.coinsService.getTransactions(+userId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('transactions')
-  async getAllTransactions(): Promise<CoinTransaction[]> {
-    return this.coinsService.getAllTransactions();
+  @Get()
+  async getCoins(@Session() session: any) {
+    const user = this.checkSession(session);
+    return this.coinsService.getCoins(user.id);
+  }
+
+  @Post('collect')
+  async collectCoins(@Session() session: any) {
+    const user = this.checkSession(session);
+    return this.coinsService.collectCoins(user.id);
   }
 
   @Post('earn')

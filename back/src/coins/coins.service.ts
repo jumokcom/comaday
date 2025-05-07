@@ -71,4 +71,16 @@ export class CoinsService {
 
     return this.coinTransactionRepository.save(transaction);
   }
+
+  async getCoins(userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    return { coins: user.coinCount };
+  }
+
+  async collectCoins(userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    user.coinCount += 1;
+    await this.userRepository.save(user);
+    return { coins: user.coinCount };
+  }
 } 

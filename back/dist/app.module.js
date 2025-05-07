@@ -16,9 +16,24 @@ const users_module_1 = require("./users/users.module");
 const coins_module_1 = require("./coins/coins.module");
 const ranking_module_1 = require("./ranking/ranking.module");
 const auth_module_1 = require("./auth/auth.module");
+const admin_module_1 = require("./admin/admin.module");
 const configuration_1 = require("./config/configuration");
 const typeorm_config_1 = require("./config/typeorm.config");
+const session = require("express-session");
 let AppModule = class AppModule {
+    configure(consumer) {
+        consumer
+            .apply(session({
+            secret: process.env.SESSION_SECRET || 'your-secret-key',
+            resave: false,
+            saveUninitialized: false,
+            cookie: {
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 24 * 60 * 60 * 1000,
+            },
+        }))
+            .forRoutes('*');
+    }
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
@@ -48,6 +63,7 @@ exports.AppModule = AppModule = __decorate([
             users_module_1.UsersModule,
             coins_module_1.CoinsModule,
             ranking_module_1.RankingModule,
+            admin_module_1.AdminModule,
         ],
     })
 ], AppModule);

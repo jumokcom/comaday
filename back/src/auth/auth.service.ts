@@ -1,34 +1,39 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
-  ) {}
+  private readonly logger = new Logger(AuthService.name);
+
+  constructor(private usersService: UsersService) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.usersService.findByUsername(username);
-    if (user && await bcrypt.compare(password, user.password)) {
-      const { password, ...result } = user;
-      return result;
-    }
-    return null;
-  }
-
-  async login(username: string, password: string) {
-    const user = await this.validateUser(username, password);
+    this.logger.debug(`Attempting to validate user: ${username}`);
+    
+    const user = await this.usersService.findOne(username);
+    this.logger.debug(`User found: ${user ? 'yes' : 'no'}`);
+    
     if (!user) {
-      throw new UnauthorizedException('아이디 또는 비밀번호가 올바르지 않습니다.');
+      this.logger.debug(`User not found: ${username}`);
+      throw new UnauthorizedException('사용자를 찾을 수 없습니다.');
     }
 
-    const payload = { username: user.username, sub: user.id };
-    return {
-      access_token: this.jwtService.sign(payload),
-      user,
-    };
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    this.logger.debug(`Password validation result: ${isPasswordValid}`);
+
+    if (!isPasswordValid) {
+      this.logger.debug(`Invalid password for user: ${username}`);
+      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
+    }
+
+    if (user.isGuest) {
+      this.logger.debug(`Guest user attempted login: ${username}`);
+      throw new UnauthorizedException('게스트 계정으로는 로그인할 수 없습니다.');
+    }
+
+    const { password: _, ...result } = user;
+    this.logger.debug(`User validated successfully: ${username}, isAdmin: ${result.isAdmin}`);
+    return result;
   }
 } 

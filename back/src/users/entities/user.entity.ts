@@ -8,17 +8,11 @@ export class User {
   @Column({ unique: true })
   username: string;
 
-  @Column({ unique: true, nullable: true })
-  email: string;
-
   @Column()
   password: string;
 
-  @Column({ unique: true })
-  memberNumber: string;
-
-  @Column({ default: 0 })
-  coinCount: number;
+  @Column({ nullable: true })
+  email: string;
 
   @Column({ default: false })
   isAdmin: boolean;
@@ -26,12 +20,15 @@ export class User {
   @Column({ default: false })
   isGuest: boolean;
 
-  @Column({ nullable: true })
-  lastLoginAt: Date;
+  @Column({ default: 0 })
+  coinCount: number;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ nullable: true })
+  lastLoginAt: Date;
 } 
